@@ -1,0 +1,54 @@
+[gd_scene load_steps=6 format=3 uid="uid://cx1hhwfxtmgm4"]
+
+[ext_resource type="Script" path="res://scripts/Pallet.gd" id="1_38nw7"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_juhgv"]
+size = Vector2(100, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1yldr"]
+size = Vector2(20, 100)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_bj2mf"]
+radius = 60.0
+
+[sub_resource type="AnimatedTexture" id="AnimatedTexture_rvcrw"]
+
+[node name="Pallet" type="StaticBody2D" groups=["pallets"]]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("1_38nw7")
+
+[node name="AnimatedSprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AnimatedTexture_rvcrw")
+
+[node name="CollisionStanding" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_juhgv")
+
+[node name="CollisionDropped" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1yldr")
+disabled = true
+
+[node name="InteractionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+shape = SubResource("CircleShape2D_bj2mf")
+
+[node name="Sounds" type="Node" parent="."]
+
+[node name="DropSound" type="AudioStreamPlayer2D" parent="."]
+
+[node name="BreakSound" type="AudioStreamPlayer2D" parent="."]
+
+[node name="StunSound" type="AudioStreamPlayer2D" parent="."]
+
+[node name="StatusLabel" type="Label" parent="."]
+offset_left = -60.0
+offset_top = -60.0
+offset_right = 60.0
+offset_bottom = -37.0
+horizontal_alignment = 1
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = null 

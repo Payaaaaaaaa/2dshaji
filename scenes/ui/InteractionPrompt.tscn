@@ -1,0 +1,97 @@
+[gd_scene load_steps=2 format=3 uid="uid://cnwcm5x5c14hv"]
+
+[ext_resource type="Script" path="res://scripts/InteractionPrompt.gd" id="1_vbxqn"]
+
+[node name="InteractionPrompt" type="Control"]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -100.0
+offset_right = 200.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+script = ExtResource("1_vbxqn")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ObjectLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "发电机"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ActionContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ActionRow1" type="HBoxContainer" parent="VBoxContainer/ActionContainer"]
+layout_mode = 2
+
+[node name="KeyLabel" type="Label" parent="VBoxContainer/ActionContainer/ActionRow1"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.3
+text = "[E]"
+horizontal_alignment = 1
+
+[node name="ActionLabel" type="Label" parent="VBoxContainer/ActionContainer/ActionRow1"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "修理"
+
+[node name="ActionRow2" type="HBoxContainer" parent="VBoxContainer/ActionContainer"]
+visible = false
+layout_mode = 2
+
+[node name="KeyLabel" type="Label" parent="VBoxContainer/ActionContainer/ActionRow2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.3
+text = "[F]"
+horizontal_alignment = 1
+
+[node name="ActionLabel" type="Label" parent="VBoxContainer/ActionContainer/ActionRow2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "破坏"
+
+[node name="ActionRow3" type="HBoxContainer" parent="VBoxContainer/ActionContainer"]
+visible = false
+layout_mode = 2
+
+[node name="KeyLabel" type="Label" parent="VBoxContainer/ActionContainer/ActionRow3"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.3
+text = "[R]"
+horizontal_alignment = 1
+
+[node name="ActionLabel" type="Label" parent="VBoxContainer/ActionContainer/ActionRow3"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "救援" 

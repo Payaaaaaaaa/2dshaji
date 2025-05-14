@@ -1,0 +1,94 @@
+[gd_scene load_steps=3 format=3 uid="uid://bjpnbdl5oi6s4"]
+
+[ext_resource type="Script" path="res://scripts/GameLogic.gd" id="1_71cgj"]
+[ext_resource type="Script" path="res://scripts/GameHUD.gd" id="2_q6j3v"]
+
+[node name="Game" type="Node2D"]
+
+[node name="Environment" type="Node2D" parent="."]
+
+[node name="TileMap" type="TileMap" parent="Environment"]
+format = 2
+
+[node name="Objects" type="Node2D" parent="."]
+
+[node name="Generators" type="Node2D" parent="Objects"]
+
+[node name="Hooks" type="Node2D" parent="Objects"]
+
+[node name="Pallets" type="Node2D" parent="Objects"]
+
+[node name="ExitGates" type="Node2D" parent="Objects"]
+
+[node name="Players" type="Node2D" parent="."]
+
+[node name="GameLogic" type="Node" parent="."]
+script = ExtResource("1_71cgj")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("2_q6j3v")
+
+[node name="SurvivorHUD" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="KillerHUD" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GameStateLabel" type="Label" parent="HUD"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 20.0
+offset_right = 150.0
+offset_bottom = 46.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 18
+text = "等待游戏开始..."
+horizontal_alignment = 1
+
+[node name="GeneratorsLabel" type="Label" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 46.0
+grow_horizontal = 0
+text = "发电机: 0/5"
+horizontal_alignment = 2
+
+[node name="SurvivorsLabel" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 300.0
+offset_bottom = 46.0
+text = "幸存者: 0 活着, 0 逃脱, 0 死亡"
+
+[node name="TimerLabel" type="Label" parent="HUD"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -45.0
+offset_top = 50.0
+offset_right = 45.0
+offset_bottom = 76.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 18
+text = "00:00"
+horizontal_alignment = 1
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://scenes/characters/Survivor.tscn", "res://scenes/characters/Killer.tscn")
+spawn_path = NodePath("../Players") 

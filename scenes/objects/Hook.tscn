@@ -1,0 +1,58 @@
+[gd_scene load_steps=4 format=3 uid="uid://cq4u84xxbrw0x"]
+
+[ext_resource type="Script" path="res://scripts/Hook.gd" id="1_jxxqg"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_15ahs"]
+size = Vector2(50, 50)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4dtmt"]
+radius = 60.0
+
+[node name="Hook" type="StaticBody2D" groups=["hooks"]]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("1_jxxqg")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+hframes = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_15ahs")
+
+[node name="InteractionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+shape = SubResource("CircleShape2D_4dtmt")
+
+[node name="SacrificeProgress" type="ProgressBar" parent="."]
+offset_left = -40.0
+offset_top = -60.0
+offset_right = 40.0
+offset_bottom = -50.0
+max_value = 1.0
+show_percentage = false
+
+[node name="SurvivorPosition" type="Marker2D" parent="."]
+position = Vector2(0, -10)
+
+[node name="SacrificeTimer" type="Timer" parent="."]
+
+[node name="Sounds" type="Node" parent="."]
+
+[node name="HookSound" type="AudioStreamPlayer2D" parent="Sounds"]
+
+[node name="StruggleSound" type="AudioStreamPlayer2D" parent="Sounds"]
+
+[node name="RescueSound" type="AudioStreamPlayer2D" parent="Sounds"]
+
+[node name="StatusLabel" type="Label" parent="."]
+offset_left = -60.0
+offset_top = -90.0
+offset_right = 60.0
+offset_bottom = -67.0
+horizontal_alignment = 1
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = null 

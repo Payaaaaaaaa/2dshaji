@@ -1,0 +1,121 @@
+[gd_scene load_steps=6 format=3 uid="uid://dxn2je0c7whm4"]
+
+[ext_resource type="Script" path="res://scripts/Survivor.gd" id="1_48v3q"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_m6c4t"]
+size = Vector2(32, 32)
+
+[sub_resource type="Animation" id="Animation_8nlu5"]
+resource_name = "idle"
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_ujptp"]
+resource_name = "run"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_bimr3"]
+_data = {
+"idle": SubResource("Animation_8nlu5"),
+"run": SubResource("Animation_ujptp")
+}
+
+[node name="Survivor" type="CharacterBody2D" groups=["survivors"]]
+collision_layer = 2
+script = ExtResource("1_48v3q")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+hframes = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_m6c4t")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_bimr3")
+}
+
+[node name="InteractionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+shape = SubResource("RectangleShape2D_m6c4t")
+debug_color = Color(0.847059, 0.368627, 0.309804, 0.419608)
+
+[node name="NameLabel" type="Label" parent="."]
+offset_left = -60.0
+offset_top = -45.0
+offset_right = 60.0
+offset_bottom = -22.0
+horizontal_alignment = 1
+
+[node name="StateLabel" type="Label" parent="."]
+offset_left = -60.0
+offset_top = -22.0
+offset_right = 60.0
+offset_bottom = 1.0
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+
+[node name="ActionProgress" type="ProgressBar" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = 40.0
+offset_right = 50.0
+offset_bottom = 55.0
+grow_horizontal = 2
+grow_vertical = 2
+max_value = 1.0
+value = 0.5
+show_percentage = false
+
+[node name="HealthBar" type="ProgressBar" parent="."]
+offset_left = -30.0
+offset_top = 20.0
+offset_right = 30.0
+offset_bottom = 28.0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+max_value = 2.0
+value = 2.0
+show_percentage = false
+
+[node name="Sounds" type="Node" parent="."]
+
+[node name="HurtSound" type="AudioStreamPlayer2D" parent="Sounds"]
+
+[node name="HealSound" type="AudioStreamPlayer2D" parent="Sounds"]
+
+[node name="RepairSound" type="AudioStreamPlayer2D" parent="Sounds"]
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = null 

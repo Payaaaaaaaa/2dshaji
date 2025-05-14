@@ -1,0 +1,372 @@
+[gd_scene load_steps=4 format=3 uid="uid://dty1xq5o5gckm"]
+
+[ext_resource type="Script" path="res://scripts/GameHUD.gd" id="1_m5xal"]
+[ext_resource type="PackedScene" uid="uid://ci7dcvnpnw34f" path="res://scenes/ui/QTE.tscn" id="2_02lms"]
+[ext_resource type="PackedScene" uid="uid://cnwcm5x5c14hv" path="res://scenes/ui/InteractionPrompt.tscn" id="3_n7qci"]
+
+[node name="GameHUD" type="CanvasLayer"]
+script = ExtResource("1_m5xal")
+
+[node name="SurvivorHUD" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HealthBar" type="ProgressBar" parent="SurvivorHUD"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -40.0
+offset_right = 220.0
+offset_bottom = -20.0
+grow_vertical = 0
+max_value = 2.0
+value = 2.0
+show_percentage = false
+
+[node name="HealthLabel" type="Label" parent="SurvivorHUD/HealthBar"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "健康"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ObjectivesList" type="VBoxContainer" parent="SurvivorHUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_top = 80.0
+offset_right = -20.0
+offset_bottom = 180.0
+grow_horizontal = 0
+
+[node name="ObjectivesLabel" type="Label" parent="SurvivorHUD/ObjectivesList"]
+layout_mode = 2
+text = "目标:"
+
+[node name="RepairGenerators" type="Label" parent="SurvivorHUD/ObjectivesList"]
+layout_mode = 2
+text = "□ 修理发电机 (0/5)"
+
+[node name="OpenExitGate" type="Label" parent="SurvivorHUD/ObjectivesList"]
+layout_mode = 2
+text = "□ 打开出口门"
+
+[node name="Escape" type="Label" parent="SurvivorHUD/ObjectivesList"]
+layout_mode = 2
+text = "□ 逃离"
+
+[node name="StatusEffects" type="HBoxContainer" parent="SurvivorHUD"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 80.0
+offset_right = 100.0
+offset_bottom = 120.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="Effect1" type="Panel" parent="SurvivorHUD/StatusEffects"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="SurvivorHUD/StatusEffects/Effect1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Effect2" type="Panel" parent="SurvivorHUD/StatusEffects"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="SurvivorHUD/StatusEffects/Effect2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Effect3" type="Panel" parent="SurvivorHUD/StatusEffects"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="SurvivorHUD/StatusEffects/Effect3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Effect4" type="Panel" parent="SurvivorHUD/StatusEffects"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="SurvivorHUD/StatusEffects/Effect4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="KillerHUD" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PowerBar" type="ProgressBar" parent="KillerHUD"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -40.0
+offset_right = 220.0
+offset_bottom = -20.0
+grow_vertical = 0
+max_value = 1.0
+value = 0.5
+show_percentage = false
+
+[node name="PowerLabel" type="Label" parent="KillerHUD/PowerBar"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "能力"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SurvivorStatus" type="VBoxContainer" parent="KillerHUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_top = 80.0
+offset_right = -20.0
+offset_bottom = 240.0
+grow_horizontal = 0
+
+[node name="SurvivorStatusLabel" type="Label" parent="KillerHUD/SurvivorStatus"]
+layout_mode = 2
+text = "幸存者状态:"
+
+[node name="Survivor1" type="HBoxContainer" parent="KillerHUD/SurvivorStatus"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="KillerHUD/SurvivorStatus/Survivor1"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "幸存者1"
+
+[node name="Status" type="Label" parent="KillerHUD/SurvivorStatus/Survivor1"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "健康"
+horizontal_alignment = 2
+
+[node name="Survivor2" type="HBoxContainer" parent="KillerHUD/SurvivorStatus"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="KillerHUD/SurvivorStatus/Survivor2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "幸存者2"
+
+[node name="Status" type="Label" parent="KillerHUD/SurvivorStatus/Survivor2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "受伤"
+horizontal_alignment = 2
+
+[node name="Survivor3" type="HBoxContainer" parent="KillerHUD/SurvivorStatus"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="KillerHUD/SurvivorStatus/Survivor3"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "幸存者3"
+
+[node name="Status" type="Label" parent="KillerHUD/SurvivorStatus/Survivor3"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "垂死"
+horizontal_alignment = 2
+
+[node name="Survivor4" type="HBoxContainer" parent="KillerHUD/SurvivorStatus"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="KillerHUD/SurvivorStatus/Survivor4"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "幸存者4"
+
+[node name="Status" type="Label" parent="KillerHUD/SurvivorStatus/Survivor4"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "被挂"
+horizontal_alignment = 2
+
+[node name="StatusEffects" type="HBoxContainer" parent="KillerHUD"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 80.0
+offset_right = 100.0
+offset_bottom = 120.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="Effect1" type="Panel" parent="KillerHUD/StatusEffects"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="KillerHUD/StatusEffects/Effect1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Effect2" type="Panel" parent="KillerHUD/StatusEffects"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="KillerHUD/StatusEffects/Effect2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Effect3" type="Panel" parent="KillerHUD/StatusEffects"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="KillerHUD/StatusEffects/Effect3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GameInfoPanel" type="Panel" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 10.0
+offset_right = 200.0
+offset_bottom = 70.0
+grow_horizontal = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GameInfoPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GameStateLabel" type="Label" parent="GameInfoPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "游戏进行中"
+horizontal_alignment = 1
+
+[node name="InfoContainer" type="HBoxContainer" parent="GameInfoPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="GeneratorsLabel" type="Label" parent="GameInfoPanel/VBoxContainer/InfoContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "发电机: 0/5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TimerLabel" type="Label" parent="GameInfoPanel/VBoxContainer/InfoContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "00:00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SurvivorsLabel" type="Label" parent="GameInfoPanel/VBoxContainer/InfoContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "幸存者: 4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InteractionPrompt" parent="." instance=ExtResource("3_n7qci")]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -100.0
+offset_right = 200.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="QTE" parent="." instance=ExtResource("2_02lms")]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+auto_start = false 

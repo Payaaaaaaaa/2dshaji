@@ -1,0 +1,100 @@
+[gd_scene load_steps=6 format=3 uid="uid://drc31pnptrw88"]
+
+[ext_resource type="Script" path="res://scripts/Killer.gd" id="1_p5n4f"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_c3jdp"]
+size = Vector2(40, 40)
+
+[sub_resource type="Animation" id="Animation_t1cde"]
+resource_name = "idle"
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_erjg8"]
+resource_name = "run"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_2q1lr"]
+_data = {
+"idle": SubResource("Animation_t1cde"),
+"run": SubResource("Animation_erjg8")
+}
+
+[node name="Killer" type="CharacterBody2D" groups=["killers"]]
+collision_layer = 4
+script = ExtResource("1_p5n4f")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+hframes = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_c3jdp")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_2q1lr")
+}
+
+[node name="AttackArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+position = Vector2(35, 0)
+shape = SubResource("RectangleShape2D_c3jdp")
+
+[node name="AttackTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="StunTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="NameLabel" type="Label" parent="."]
+offset_left = -60.0
+offset_top = -55.0
+offset_right = 60.0
+offset_bottom = -32.0
+horizontal_alignment = 1
+
+[node name="StateLabel" type="Label" parent="."]
+offset_left = -60.0
+offset_top = -32.0
+offset_right = 60.0
+offset_bottom = -9.0
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+
+[node name="Sounds" type="Node" parent="."]
+
+[node name="AttackSound" type="AudioStreamPlayer2D" parent="Sounds"]
+
+[node name="StunSound" type="AudioStreamPlayer2D" parent="Sounds"]
+
+[node name="CarrySound" type="AudioStreamPlayer2D" parent="Sounds"]
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = null 

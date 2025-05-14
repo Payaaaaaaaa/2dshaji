@@ -1,0 +1,353 @@
+[gd_scene load_steps=2 format=3 uid="uid://cx36f1c00f8s2"]
+
+[ext_resource type="Script" path="res://scripts/Lobby.gd" id="1_8lwfu"]
+
+[node name="Lobby" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_8lwfu")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.117647, 0.0901961, 0.211765, 1)
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 50.0
+offset_right = 200.0
+offset_bottom = 100.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 36
+text = "游戏大厅"
+horizontal_alignment = 1
+
+[node name="RoomInfoPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 110.0
+offset_right = 200.0
+offset_bottom = 160.0
+grow_horizontal = 2
+
+[node name="RoomInfoLabel" type="Label" parent="RoomInfoPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "房间ID: 12345  |  玩家: 1/5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayerListPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -120.0
+offset_right = 350.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlayerListLabel" type="Label" parent="PlayerListPanel"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 10.0
+offset_right = 100.0
+offset_bottom = 36.0
+grow_horizontal = 2
+text = "玩家列表"
+horizontal_alignment = 1
+
+[node name="PlayerList" type="VBoxContainer" parent="PlayerListPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -100.0
+offset_right = 320.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="PlayerRow0" type="HBoxContainer" parent="PlayerListPanel/PlayerList"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="NameLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow0"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Player 1 (杀手)"
+vertical_alignment = 1
+
+[node name="ReadyLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow0"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+text = "房主"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RoleLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow0"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "杀手"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="PlayerRow1" type="HBoxContainer" parent="PlayerListPanel/PlayerList"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="NameLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow1"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Player 2"
+vertical_alignment = 1
+
+[node name="ReadyLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow1"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+text = "已准备"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RoleLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow1"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "幸存者"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="PlayerRow2" type="HBoxContainer" parent="PlayerListPanel/PlayerList"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="NameLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Player 3"
+vertical_alignment = 1
+
+[node name="ReadyLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "未准备"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RoleLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "幸存者"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="PlayerRow3" type="HBoxContainer" parent="PlayerListPanel/PlayerList"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="NameLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow3"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Player 4"
+vertical_alignment = 1
+
+[node name="ReadyLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow3"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "未准备"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RoleLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow3"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "幸存者"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="PlayerRow4" type="HBoxContainer" parent="PlayerListPanel/PlayerList"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="NameLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow4"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Player 5"
+vertical_alignment = 1
+
+[node name="ReadyLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow4"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "未准备"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RoleLabel" type="Label" parent="PlayerListPanel/PlayerList/PlayerRow4"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "幸存者"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ChatArea" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -200.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="ChatLabel" type="Label" parent="ChatArea"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 10.0
+offset_right = 100.0
+offset_bottom = 36.0
+grow_horizontal = 2
+text = "聊天"
+horizontal_alignment = 1
+
+[node name="ChatBox" type="RichTextLabel" parent="ChatArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 40.0
+offset_right = -10.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "玩家1: 大家好!
+玩家2: 你好!"
+
+[node name="ChatInput" type="LineEdit" parent="ChatArea"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -35.0
+offset_right = -10.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 0
+placeholder_text = "输入消息..."
+
+[node name="ButtonsPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -100.0
+offset_right = 200.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ButtonsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="ReadyButton" type="Button" parent="ButtonsPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "准备"
+
+[node name="StartButton" type="Button" parent="ButtonsPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "开始游戏"
+
+[node name="LeaveButton" type="Button" parent="ButtonsPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "离开房间"
+
+[node name="Timers" type="Node" parent="."]
+
+[node name="UpdateTimer" type="Timer" parent="Timers"]
+wait_time = 2.0
+autostart = true
+
+[connection signal="pressed" from="ButtonsPanel/HBoxContainer/ReadyButton" to="." method="_on_ready_button_pressed"]
+[connection signal="pressed" from="ButtonsPanel/HBoxContainer/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="ButtonsPanel/HBoxContainer/LeaveButton" to="." method="_on_leave_button_pressed"]
+[connection signal="timeout" from="Timers/UpdateTimer" to="." method="_on_update_timer_timeout"] 

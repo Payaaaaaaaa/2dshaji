@@ -1,0 +1,117 @@
+[gd_scene load_steps=2 format=3 uid="uid://ci7dcvnpnw34f"]
+
+[ext_resource type="Script" path="res://scripts/QTE.gd" id="1_gicsd"]
+
+[node name="QTE" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gicsd")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -140.0
+offset_top = 10.0
+offset_right = 140.0
+offset_bottom = 33.0
+grow_horizontal = 2
+text = "按下显示的键位!"
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -125.0
+offset_top = -60.0
+offset_right = 125.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+max_value = 1.0
+value = 0.5
+show_percentage = false
+
+[node name="TargetZone" type="ColorRect" parent="ProgressBar"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -25.0
+offset_top = -12.5
+offset_bottom = 12.5
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(0, 1, 0, 0.501961)
+
+[node name="KeyContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.0
+offset_top = -10.0
+offset_right = 80.0
+offset_bottom = 70.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="KeyPrompt" type="Label" parent="KeyContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "SPACE"
+horizontal_alignment = 1
+
+[node name="TimerLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+offset_bottom = -17.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "5.0"
+horizontal_alignment = 1
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 5.0
+one_shot = true
+
+[node name="TickTimer" type="Timer" parent="."]
+wait_time = 0.05
+autostart = true
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="timeout" from="TickTimer" to="." method="_on_tick_timer_timeout"] 
