@@ -10,38 +10,83 @@ enum HealthState {
 }
 
 # 当前健康状态
-var health_state: int = HealthState.HEALTHY
+@export var health_state: int = HealthState.HEALTHY:
+	set(value):
+		health_state = value
+		# 根据状态调整可移动性
+		match health_state:
+			HealthState.HEALTHY, HealthState.INJURED:
+				can_move = true
+			HealthState.DOWNED:
+				can_move = false
+				can_interact = false
+			HealthState.DEAD:
+				can_move = false
+				can_interact = false
+		
+		# 播放对应的受伤/倒地声音
+		match health_state:
+			HealthState.INJURED:
+				play_sound("hurt")
+			HealthState.DOWNED:
+				play_sound("down")
+			HealthState.DEAD:
+				play_sound("death")
+		
+		# 更新动画
+		play_animation(current_animation)
 
 # 移动参数
-var walk_speed: float = 100.0
-var run_speed: float = 150.0
-var current_speed: float = walk_speed
-var is_running: bool = false
+@export var walk_speed: float = 100.0
+@export var run_speed: float = 150.0
+var current_speed = run_speed if is_running else walk_speed
+@export var is_running: bool = false:
+	set(value):
+		is_running = value
+		# 更新速度
+		current_speed = run_speed if is_running else walk_speed
 
 # 状态控制
-var can_move: bool = true
-var can_interact: bool = true
+@export var can_move: bool = true
+@export var can_interact: bool = true
 
 # 当前交互目标
 var interactable_in_range = null
 
 # 网络相关
-@onready var player_id: int = 0
+@export var player_id: int = 0
 var is_local_player: bool = false
+
+# 同步变量
+var last_position: Vector2 = Vector2.ZERO
+var interpolation_speed: float = 10.0
+var position_buffer: Array = []
+const BUFFER_SIZE = 5
 
 # 子节点引用
 @onready var sprite = $AnimatedSprite2D
 @onready var collision = $CollisionShape2D
 @onready var interaction_area = $InteractionArea
+@onready var sync_node: MultiplayerSynchronizer = $Synchronizer
+@onready var audio_player = $AudioStreamPlayer2D
 
 # 动画状态
 var current_animation: String = "idle"
 var current_direction: Vector2 = Vector2.DOWN
 
+# 应用平衡管理器的速度参数
 func _ready():
 	# 获取玩家ID
 	player_id = get_multiplayer_authority()
 	is_local_player = player_id == multiplayer.get_unique_id()
+	
+	# 初始化同步节点
+	if sync_node:
+		# 如果没有设置过同步属性，则设置
+		if sync_node.get_replication_config().get_property_count() == 0:
+			setup_syncing()
+	else:
+		print("警告: 角色缺少MultiplayerSynchronizer节点")
 	
 	# 如果是本地玩家，设置摄像机跟随
 	if is_local_player:
@@ -50,19 +95,80 @@ func _ready():
 		camera.make_current()
 	
 	# 连接交互区域信号
-	if interaction_area != null:
+	if interaction_area:
 		interaction_area.body_entered.connect(_on_interaction_area_entered)
 		interaction_area.body_exited.connect(_on_interaction_area_exited)
+	
+	# 设置初始位置记录
+	last_position = global_position
+	
+	# 如果平衡管理器已初始化，应用平衡参数
+	if GameBalanceManager.instance:
+		update_balance_parameters()
+
+func setup_syncing():
+	# 设置同步属性
+	var config = sync_node.get_replication_config()
+	
+	# 同步位置和速度
+	config.add_property("global_position")
+	config.add_property("velocity")
+	
+	# 同步状态
+	config.add_property("health_state")
+	config.add_property("is_running")
+	config.add_property("can_move")
+	config.add_property("can_interact")
+	
+	# 同步动画
+	config.add_property("current_animation")
+	config.add_property("current_direction")
+	
+	# 为角色特有状态添加钩子，由子类填充
+	setup_additional_syncing(config)
+
+# 子类可覆盖此方法添加更多同步属性
+func setup_additional_syncing(_config):
+	pass
 
 func _physics_process(delta):
-	if !is_local_player:
-		return
+	if is_local_player:
+		if can_move:
+			handle_movement()
+		
+		if can_interact:
+			handle_interaction()
+	else:
+		# 非本地玩家平滑插值移动
+		smooth_remote_movement(delta)
+
+# 平滑远程玩家移动
+func smooth_remote_movement(delta):
+	if position_buffer.size() > 0:
+		# 从缓冲区获取下一个目标位置
+		var target_pos = position_buffer[0]
+		global_position = global_position.lerp(target_pos, delta * interpolation_speed)
+		
+		# 如果足够接近目标位置，移除这个位置
+		if global_position.distance_to(target_pos) < 5.0:
+			position_buffer.pop_front()
 	
-	if can_move:
-		handle_movement()
+	# 根据移动情况更新动画
+	if last_position != global_position:
+		var move_vector = global_position - last_position
+		if move_vector.length() > 0.1:
+			update_direction(move_vector.normalized())
+			if move_vector.length() > 1.0:
+				if is_running:
+					play_animation("run")
+				else:
+					play_animation("walk")
+			else:
+				play_animation("idle")
+		else:
+			play_animation("idle")
 	
-	if can_interact:
-		handle_interaction()
+	last_position = global_position
 
 # 处理移动输入并应用
 func handle_movement():
@@ -104,10 +210,8 @@ func handle_movement():
 	
 	# 设置速度并移动
 	velocity = direction * current_speed
-	move_and_slide()
-	
-	# 发送位置更新到服务器
-	rpc_id(1, "update_position", global_position, velocity)
+	if can_move:
+		move_and_slide()
 
 # 更新朝向并选择对应方向的动画
 func update_direction(dir: Vector2):
@@ -133,7 +237,7 @@ func play_animation(anim_name: String):
 		animation_to_play = "crawl"
 	
 	# 播放动画
-	if sprite.has_animation(animation_to_play) and current_animation != animation_to_play:
+	if sprite and sprite.has_animation(animation_to_play) and current_animation != animation_to_play:
 		sprite.play(animation_to_play)
 		current_animation = animation_to_play
 
@@ -146,9 +250,20 @@ func handle_interaction():
 func interact_with(object):
 	# 基类中是空实现，由幸存者和杀手子类重写
 	print("与对象交互:", object.name)
+	
+	# 如果对象是Interactable类型，调用开始交互
+	if object is Interactable:
+		object.start_interaction(self)
+		
+		# 持续交互直到玩家松开交互键或离开范围
+		while Input.is_action_pressed("interact") and interactable_in_range == object:
+			await get_tree().process_frame
+		
+		# 交互结束，取消交互
+		object.cancel_interaction(self)
 
 # 受到伤害时调用
-func take_damage(attacker = null):
+func take_damage(_attacker = null):
 	# 基础伤害逻辑，子类可以扩展
 	match health_state:
 		HealthState.HEALTHY:
@@ -161,29 +276,6 @@ func take_damage(attacker = null):
 # 改变健康状态
 func change_health_state(new_state: int):
 	health_state = new_state
-	
-	# 根据状态调整可移动性
-	match health_state:
-		HealthState.HEALTHY, HealthState.INJURED:
-			can_move = true
-		HealthState.DOWNED:
-			can_move = false
-			can_interact = false
-		HealthState.DEAD:
-			can_move = false
-			can_interact = false
-			
-	# 播放对应的受伤/倒地声音
-	match health_state:
-		HealthState.INJURED:
-			play_sound("hurt")
-		HealthState.DOWNED:
-			play_sound("down")
-		HealthState.DEAD:
-			play_sound("death")
-	
-	# 更新动画
-	play_animation(current_animation)
 
 # 死亡处理
 func die():
@@ -192,16 +284,16 @@ func die():
 	# 在子类中实现具体逻辑
 
 # 播放声音
-func play_sound(sound_name: String):
-	var audio_player = $AudioStreamPlayer2D
+func play_sound(_sound_name: String):
 	if audio_player:
 		# 此处实际项目中应该根据sound_name设置对应的音频资源
 		# 例如 audio_player.stream = preload("res://assets/audio/sfx_" + sound_name + ".wav")
-		audio_player.play()
+		if audio_player.stream:
+			audio_player.play()
 
 # 当有物体进入交互范围
 func _on_interaction_area_entered(body):
-	if body.has_method("can_interact_with") and body.can_interact_with(self):
+	if is_local_player and body.has_method("can_interact_with") and body.can_interact_with(self):
 		interactable_in_range = body
 		# 显示交互提示UI
 		if is_local_player:
@@ -210,39 +302,119 @@ func _on_interaction_area_entered(body):
 
 # 当物体离开交互范围
 func _on_interaction_area_exited(body):
-	if interactable_in_range == body:
+	if is_local_player and interactable_in_range == body:
 		interactable_in_range = null
 		# 隐藏交互提示UI
 		if is_local_player:
 			# 在实际项目中，这里应该调用UI隐藏交互提示
 			print("无法再与", body.name, "交互")
+			
+# 处理被告知有交互物体
+func on_interactable_entered(interactable: Interactable):
+	if is_local_player:
+		# 如果角色状态允许交互，更新当前交互目标
+		if can_interact:
+			interactable_in_range = interactable
+			# 显示交互提示UI
+			print("可以与", interactable.name, "交互")
 
-# 同步位置（客户端 -> 服务器）
-@rpc("any_peer", "unreliable")
-func update_position(pos: Vector2, vel: Vector2):
-	if multiplayer.get_remote_sender_id() == player_id:
-		global_position = pos
-		velocity = vel
-		
-		# 服务器接收到位置更新后，广播给所有其他客户端
-		if multiplayer.is_server():
-			for id in Global.player_info.keys():
-				if id != player_id:
-					rpc_id(id, "sync_position", pos, vel)
+# 处理被告知交互物体离开
+func on_interactable_exited(interactable: Interactable):
+	if is_local_player and interactable_in_range == interactable:
+		interactable_in_range = null
+		# 隐藏交互提示UI
+		print("无法再与", interactable.name, "交互")
 
-# 同步位置（服务器 -> 其他客户端）
-@rpc("authority", "unreliable")
-func sync_position(pos: Vector2, vel: Vector2):
+# 接收远程玩家新位置
+func _on_position_updated(_old_value, new_value):
+	# 仅处理远程角色
 	if !is_local_player:
-		global_position = pos
-		velocity = vel
+		# 添加到位置缓冲区
+		position_buffer.append(new_value)
+		# 限制缓冲区大小
+		while position_buffer.size() > BUFFER_SIZE:
+			position_buffer.pop_front()
+
+# 从服务器设置值
+func server_set_variable(var_name: String, value):
+	if multiplayer.is_server():
+		set(var_name, value)
+		rpc("client_set_variable", var_name, value)
+	else:
+		# 客户端发送请求到服务器
+		rpc_id(1, "server_request_set_variable", var_name, value)
+
+# 客户端请求设置变量
+@rpc("any_peer", "call_local", "reliable")
+func server_request_set_variable(var_name: String, value):
+	if !multiplayer.is_server():
+		return
 		
-		# 根据速度方向更新动画
-		if vel.length() > 0:
-			update_direction(vel.normalized())
-			if vel.length() > walk_speed:
-				play_animation("run")
-			else:
-				play_animation("walk")
-		else:
-			play_animation("idle") 
+	var sender_id = multiplayer.get_remote_sender_id()
+	# 确保只有变量拥有者可以修改
+	if sender_id == player_id:
+		server_set_variable(var_name, value)
+
+# 服务器通知所有客户端变量变化
+@rpc("authority", "call_remote", "reliable")
+func client_set_variable(var_name: String, value):
+	set(var_name, value)
+
+# 更新平衡参数
+func update_balance_parameters():
+	if is_killer():
+		walk_speed = GameBalanceManager.instance.killer_speed
+	else:
+		walk_speed = GameBalanceManager.instance.survivor_walk_speed
+		run_speed = GameBalanceManager.instance.survivor_run_speed
+
+# 获取当前移动速度，考虑健康状态和其他效果
+func get_current_speed() -> float:
+	# 基础值
+	var movement_speed = run_speed if is_running else walk_speed
+	var speed_modifier = 1.0
+	
+	# 根据状态应用修改
+	if is_killer():
+		# 杀手是否扛着幸存者
+		if is_carrying_survivor():
+			speed_modifier *= GameBalanceManager.instance.carrying_speed_multiplier
+	else: 
+		# 幸存者是否受伤
+		if health_state == HealthState.INJURED:
+			speed_modifier *= GameBalanceManager.instance.injured_speed_multiplier
+		
+		# 速度提升效果（如被击中后的短暂加速）
+		if has_speed_boost:
+			speed_modifier *= GameBalanceManager.instance.speed_boost_after_hit
+	
+	return movement_speed * speed_modifier
+
+# 判断是否为杀手
+func is_killer() -> bool:
+	return false  # 基类默认返回false，子类重写
+
+# 判断杀手是否正在扛起幸存者(Killer子类将重写)
+func is_carrying_survivor() -> bool:
+	return false  # 基类默认返回false
+
+# 幸存者速度提升标志和计时器
+var has_speed_boost: bool = false
+var speed_boost_timer: float = 0.0
+
+# 被击中时速度提升效果
+func apply_hit_speed_boost():
+	if not is_killer():
+		has_speed_boost = true
+		speed_boost_timer = GameBalanceManager.instance.speed_boost_duration
+		
+		# 创建一个 Timer 来管理速度提升持续时间
+		var timer = Timer.new()
+		timer.wait_time = speed_boost_timer
+		timer.one_shot = true
+		add_child(timer)
+		timer.timeout.connect(func(): 
+			has_speed_boost = false
+			timer.queue_free()
+		)
+		timer.start() 

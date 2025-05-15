@@ -1,4 +1,4 @@
-extends StaticBody2D
+extends Interactable
 class_name ExitGate
 
 # 出口门状态
@@ -40,7 +40,13 @@ signal opening_progress_changed(progress)
 signal opened()
 signal survivor_escaped(survivor)
 
+# 出口门特有属性
+@export var is_powered: bool = false  # 是否已通电
+@export var is_open: bool = false     # 是否已打开
+
 func _ready():
+	super._ready()
+	
 	# 初始化状态
 	state = ExitGateState.UNPOWERED
 	open_progress = 0.0
@@ -58,204 +64,148 @@ func _ready():
 	# 添加到出口门组
 	add_to_group("exit_gates")
 
-func _physics_process(delta):
-	# 处理开门逻辑
-	if state == ExitGateState.OPENING and opening_survivors.size() > 0:
-		# 增加开门进度
-		open_progress += delta / open_time
-		open_progress = min(open_progress, 1.0)
-		
-		# 发送进度变化信号
-		emit_signal("opening_progress_changed", open_progress)
-		
-		# 更新视觉效果
-		update_visuals()
-		
-		# 检查是否完全开启
-		if open_progress >= 1.0:
-			complete_opening()
+# 添加额外同步属性
+func setup_additional_syncing(config):
+	config.add_property("is_powered")
+	config.add_property("is_open")
+	config.add_property("open_progress")
 
-# 设置出口通电状态
-func set_powered(powered: bool = true):
-	if powered == is_powered:
+# 设置通电状态
+func set_powered(value: bool):
+	if !multiplayer.is_server():
+		rpc_id(1, "server_request_set_powered", value)
 		return
 	
-	is_powered = powered
+	is_powered = value
 	
-	if powered:
-		# 从未通电变为已通电
-		if state == ExitGateState.UNPOWERED:
-			state = ExitGateState.POWERED
-			
-			# 播放通电音效
-			if power_sound:
-				power_sound.play()
-				
-			# 发送通电信号
-			emit_signal("powered")
-	else:
-		# 断电
-		if state == ExitGateState.POWERED or state == ExitGateState.OPENING:
-			state = ExitGateState.UNPOWERED
-			open_progress = 0.0
-			opening_survivors.clear()
+	# 更新是否可交互
+	is_interactable = is_powered and !is_open
 	
-	# 更新视觉效果
-	update_visuals()
+	# 同步到所有客户端
+	rpc("client_set_powered", value)
 
-# 检查是否已通电
-func is_powered() -> bool:
-	return state != ExitGateState.UNPOWERED
+# 设置开门状态
+func set_open(value: bool):
+	if !multiplayer.is_server():
+		rpc_id(1, "server_request_set_open", value)
+		return
+	
+	is_open = value
+	
+	# 更新是否可交互 - 门打开后不可再交互
+	is_interactable = is_powered and !is_open
+	
+	# 同步到所有客户端
+	rpc("client_set_open", value)
 
-# 开始开门
-func start_opening(survivor):
-	if state != ExitGateState.POWERED and state != ExitGateState.OPENING:
+# 检查交互权限
+func has_interaction_permission(character: Character) -> bool:
+	var is_killer = Global.network_manager.is_killer(character.player_id)
+	
+	# 杀手不能开门
+	if is_killer:
 		return false
 	
-	# 添加到开门列表
-	if not survivor in opening_survivors:
-		opening_survivors.append(survivor)
-	
-	# 如果是第一个开门者，改变状态
-	if opening_survivors.size() == 1 and state == ExitGateState.POWERED:
-		state = ExitGateState.OPENING
-		
-		# 播放开门音效
-		if opening_sound:
-			opening_sound.play()
-	
-	# 更新视觉效果
-	update_visuals()
-	
-	return true
+	# 只有通电且未开启的门可以交互
+	return is_powered and !is_open
 
-# 停止开门
-func stop_opening(survivor):
-	# 从开门列表移除
-	if survivor in opening_survivors:
-		opening_survivors.erase(survivor)
+# 交互完成后的特定逻辑
+func on_interaction_completed(player_id: int):
+	# 门开启后，可以让幸存者逃脱
+	set_open(true)
 	
-	# 如果没有人开门了，但门还没开完
-	if opening_survivors.size() == 0 and state == ExitGateState.OPENING:
-		# 停止开门音效
-		if opening_sound and opening_sound.playing:
-			opening_sound.stop()
+	# 通知游戏逻辑
+	if get_node_or_null("/root/Game"):
+		get_node("/root/Game").on_game_event("exit_gate_opened", {"gate": get_path(), "player_id": player_id})
 
-# 设置开门进度
-func set_progress(progress: float):
-	open_progress = clamp(progress, 0.0, 1.0)
+# 处理交互进度
+func _process(delta):
+	super._process(delta)
 	
-	# 如果进度达到100%，完成开门
-	if open_progress >= 1.0 and state == ExitGateState.OPENING:
-		complete_opening()
-	
-	# 发出进度更新信号
-	emit_signal("opening_progress_changed", open_progress)
-	
-	# 更新视觉效果
-	update_visuals()
+	# 服务器处理进度更新
+	if multiplayer.is_server() and is_powered and !is_open:
+		# 如果有人正在开门，更新进度
+		if is_being_interacted and interacting_players.size() > 0:
+			# 打开进度直接使用交互进度
+			open_progress = interaction_progress
+			
+			# 如果进度达到100%，完成开门
+			if open_progress >= 1.0:
+				set_open(true)
 
-# 获取当前进度
-func get_progress() -> float:
-	return open_progress
-
-# 完成开门
-func complete_opening():
-	if state == ExitGateState.OPENED:
+# 触发幸存者逃脱
+func trigger_escape(player_id: int):
+	if !multiplayer.is_server():
+		rpc_id(1, "server_request_trigger_escape", player_id)
 		return
 	
-	state = ExitGateState.OPENED
-	open_progress = 1.0
+	# 验证门是否开启
+	if !is_open:
+		return
 	
-	# 清空列表
-	opening_survivors.clear()
+	# 验证是否为幸存者
+	if !Global.network_manager.is_survivor(player_id):
+		return
 	
-	# 停止开门音效
-	if opening_sound and opening_sound.playing:
-		opening_sound.stop()
+	# 获取幸存者引用
+	var survivor = get_node_or_null("/root/Game/Players/" + str(player_id))
+	if !survivor:
+		return
 	
-	# 播放开门完成音效
-	if opened_sound:
+	# 通知游戏逻辑
+	if get_node_or_null("/root/Game"):
+		get_node("/root/Game").on_game_event("survivor_escaped", {"player_id": player_id, "gate": get_path()})
+	
+	# 可选：移除幸存者或播放逃脱动画
+	survivor.server_set_variable("health_state", survivor.HealthState.DEAD)  # 使用DEAD状态代表逃脱
+	survivor.visible = false
+
+# 更新视觉状态func update_visual_state():	# 更新灯光状态	if light_off:		light_off.visible = !is_powered		if light_on:		light_on.visible = is_powered and !is_open		if light_open:		light_open.visible = is_open		# 更新精灵动画	if sprite and sprite.has_method("play"):		if is_open:			sprite.play("open")		elif is_powered:			sprite.play("powered")		else:			sprite.play("unpowered")# 视觉反馈函数实现func on_interaction_visual_start():	if sound_opening and is_powered and !is_open:		sound_opening.play()func on_interaction_visual_cancel():	if sound_opening and sound_opening.playing:		sound_opening.stop()func on_interaction_visual_complete():	# 播放开门音效	if is_open and sound_opened:		sound_opened.play()		# 更新灯光	update_visual_state()
+
+# RPC处理函数
+@rpc("any_peer", "call_local", "reliable")
+func server_request_set_powered(value: bool):
+	if !multiplayer.is_server():
+		return
+	
+	# 验证请求有效性
+	var sender_id = multiplayer.get_remote_sender_id()
+	
+	# 只有服务器可以设置通电状态
+	if sender_id == 1:
+		set_powered(value)
+
+@rpc("any_peer", "call_local", "reliable")
+func server_request_set_open(value: bool):
+	if !multiplayer.is_server():
+		return
+	
+	# 验证请求有效性
+	var sender_id = multiplayer.get_remote_sender_id()
+	
+	# 只有服务器可以设置开门状态
+	if sender_id == 1:
+		set_open(value)
+
+@rpc("any_peer", "call_local", "reliable")
+func server_request_trigger_escape(player_id: int):
+	if !multiplayer.is_server():
+		return
+	
+	# 验证请求有效性
+	var sender_id = multiplayer.get_remote_sender_id()
+	
+	# 只能触发自己的逃脱
+	if sender_id == player_id:
+		trigger_escape(player_id)
+
+@rpc("authority", "call_remote", "reliable")
+func client_set_powered(value: bool):
+	is_powered = value
+	is_interactable = is_powered and !is_open
+	
+		# 更新视觉状态	update_visual_state()		# 播放通电音效	if is_powered and sound_powered:		sound_powered.play()@rpc("authority", "call_remote", "reliable")func client_set_open(value: bool):	is_open = value	is_interactable = is_powered and !is_open		# 更新视觉状态	update_visual_state()		# 播放开门音效	if is_open and sound_opened:
 		opened_sound.play()
-	
-	# 更新视觉效果
-	update_visuals()
-	
-	# 启用逃生区域
-	if escape_area:
-		escape_area.monitoring = true
-	
-	# 发送开门完成信号
-	emit_signal("opened")
-
-# 更新视觉效果
-func update_visuals():
-	match state:
-		ExitGateState.UNPOWERED:
-			# 未通电状态显示为关闭的门
-			if sprite.has_animation("unpowered"):
-				sprite.play("unpowered")
-				
-			# 灯光关闭
-			if light:
-				light.energy = 0.0
-				
-			# 粒子效果关闭
-			if particles:
-				particles.emitting = false
-				
-		ExitGateState.POWERED:
-			# 通电但未开启的门
-			if sprite.has_animation("powered"):
-				sprite.play("powered")
-				
-			# 灯光微亮
-			if light:
-				light.energy = 0.5
-				
-			# 有少量粒子效果
-			if particles:
-				particles.emitting = true
-				particles.amount = 5
-				
-		ExitGateState.OPENING:
-			# 正在开启的门
-			if sprite.has_animation("opening"):
-				sprite.play("opening")
-				
-			# 灯光逐渐变亮
-			if light:
-				light.energy = 0.5 + open_progress * 0.5
-				
-			# 粒子效果增加
-			if particles:
-				particles.emitting = true
-				particles.amount = 10
-				
-		ExitGateState.OPENED:
-			# 已开启的门
-			if sprite.has_animation("opened"):
-				sprite.play("opened")
-				
-			# 灯光明亮
-			if light:
-				light.energy = 1.0
-				
-			# 持续的粒子效果
-			if particles:
-				particles.emitting = true
-				particles.amount = 20
-				
-	# 根据进度调整某些效果
-	if state == ExitGateState.OPENING and light:
-		light.energy = 0.5 + open_progress * 0.5  # 随进度增亮
-
-# 播放音效
-func play_sound(sound_name: String):
-	if power_sound:
-		power_sound.play()
-	if escape_sound:
-		escape_sound.play()
 
 # 当幸存者进入逃生区域
 func _on_escape_area_body_entered(body):

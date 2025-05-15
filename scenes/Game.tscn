@@ -1,16 +1,34 @@
-[gd_scene load_steps=3 format=3 uid="uid://bjpnbdl5oi6s4"]
+[gd_scene load_steps=5 format=3 uid="uid://c3emqr2y4vgfb"]
 
-[ext_resource type="Script" path="res://scripts/GameLogic.gd" id="1_71cgj"]
-[ext_resource type="Script" path="res://scripts/GameHUD.gd" id="2_q6j3v"]
+[ext_resource type="Script" path="res://scripts/Game.gd" id="1_fxwgd"]
+[ext_resource type="Script" path="res://scripts/MultiplayerManager.gd" id="2_y4wqr"]
+[ext_resource type="Script" path="res://scripts/GameLogic.gd" id="3_d84v8"]
+[ext_resource type="PackedScene" uid="uid://dckj24h5xc87t" path="res://scenes/GameMap.tscn" id="4_i1hxw"]
 
 [node name="Game" type="Node2D"]
+script = ExtResource("1_fxwgd")
+
+[node name="MultiplayerManager" type="Node" parent="."]
+script = ExtResource("2_y4wqr")
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="MultiplayerManager"]
+_spawnable_scenes = PackedStringArray("res://scenes/characters/Killer.tscn", "res://scenes/characters/Survivor.tscn", "res://scenes/objects/Generator.tscn", "res://scenes/objects/Hook.tscn", "res://scenes/objects/ExitGate.tscn", "res://scenes/objects/Pallet.tscn", "res://scenes/objects/Chest.tscn", "res://scenes/objects/LockableGate.tscn")
+spawn_path = NodePath("../../Players")
+
+[node name="GameLogic" type="Node" parent="."]
+script = ExtResource("3_d84v8")
+
+[node name="Players" type="Node2D" parent="."]
+
+[node name="Objects" type="Node2D" parent="."]
+
+[node name="GameMap" parent="." instance=ExtResource("4_i1hxw")]
+generate_on_ready = false
 
 [node name="Environment" type="Node2D" parent="."]
 
 [node name="TileMap" type="TileMap" parent="Environment"]
 format = 2
-
-[node name="Objects" type="Node2D" parent="."]
 
 [node name="Generators" type="Node2D" parent="Objects"]
 
@@ -19,11 +37,6 @@ format = 2
 [node name="Pallets" type="Node2D" parent="Objects"]
 
 [node name="ExitGates" type="Node2D" parent="Objects"]
-
-[node name="Players" type="Node2D" parent="."]
-
-[node name="GameLogic" type="Node" parent="."]
-script = ExtResource("1_71cgj")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("2_q6j3v")
@@ -87,8 +100,4 @@ offset_bottom = 76.0
 grow_horizontal = 2
 theme_override_font_sizes/font_size = 18
 text = "00:00"
-horizontal_alignment = 1
-
-[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("res://scenes/characters/Survivor.tscn", "res://scenes/characters/Killer.tscn")
-spawn_path = NodePath("../Players") 
+horizontal_alignment = 1 

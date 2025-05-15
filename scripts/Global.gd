@@ -2,14 +2,14 @@ extends Node
 
 # 游戏状态枚举
 enum GameState {
-	MENU,       # 主菜单
-	LOBBY,      # 房间/大厅
-	GAME,       # 游戏中
-	END_SCREEN  # 结算界面
+	MAIN_MENU,
+	LOBBY,
+	GAME,
+	END_SCREEN
 }
 
 # 当前游戏状态
-var current_state: int = GameState.MENU
+var current_state: int = GameState.MAIN_MENU
 
 # 网络相关变量
 var is_server: bool = false
@@ -22,10 +22,10 @@ var my_info = {
 
 # 游戏相关常量
 const MAX_SURVIVORS = 4
-const GENERATORS_REQUIRED = 5
+var GENERATORS_REQUIRED: int = 5  # 需要完成修理的发电机数量
 
 # 游戏进度变量
-var generators_completed: int = 0
+var generators_completed: int = 0  # 已修好的发电机数量
 var survivors_alive: int = 0
 var survivor_escaped: int = 0
 
@@ -38,74 +38,48 @@ const LOBBY_SCENE = "res://scenes/ui/Lobby.tscn"
 const GAME_SCENE = "res://scenes/Game.tscn"
 const END_SCREEN_SCENE = "res://scenes/ui/EndScreen.tscn"
 
+# 网络管理器引用
+var network_manager = null
+var audio_manager = null
+var game_balance_manager = null
+
+# 信号
+signal game_state_changed(old_state, new_state)
+
 func _ready():
 	# 设置随机数种子
 	randomize()
 	
-	# 监听网络信号
-	multiplayer.peer_connected.connect(_on_peer_connected)
-	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
-	multiplayer.connected_to_server.connect(_on_connected_to_server)
-	multiplayer.connection_failed.connect(_on_connection_failed)
-	multiplayer.server_disconnected.connect(_on_server_disconnected)
-
-# 创建服务器/房间
-func create_server(port: int = 10567) -> bool:
-	var peer = ENetMultiplayerPeer.new()
-	var error = peer.create_server(port, MAX_SURVIVORS)
+	# 初始化网络管理器
+	network_manager = NetworkManager.new()
+	add_child(network_manager)
 	
-	if error != OK:
-		print("创建服务器失败: ", error)
-		return false
+	# 初始化音频管理器
+	audio_manager = AudioManager.new()
+	add_child(audio_manager)
 	
-	multiplayer.multiplayer_peer = peer
-	is_server = true
+	# 初始化平衡管理器
+	game_balance_manager = GameBalanceManager.new()
+	add_child(game_balance_manager)
 	
-	# 设置服务器信息
-	var server_id = multiplayer.get_unique_id()
-	my_info.role = "杀手"  # 房主默认为杀手
-	player_info[server_id] = my_info.duplicate()
-	
-	print("服务器创建成功，ID: ", server_id)
-	change_state(GameState.LOBBY)
-	return true
-
-# 加入服务器/房间
-func join_server(address: String, port: int = 10567) -> bool:
-	var peer = ENetMultiplayerPeer.new()
-	var error = peer.create_client(address, port)
-	
-	if error != OK:
-		print("连接服务器失败: ", error)
-		return false
-	
-	multiplayer.multiplayer_peer = peer
-	is_server = false
-	my_info.role = "幸存者"  # 加入者默认为幸存者
-	
-	print("正在连接服务器...")
-	return true
-
-# 断开连接
-func disconnect_from_server():
-	if multiplayer.multiplayer_peer:
-		multiplayer.multiplayer_peer.close()
-		
-	player_info.clear()
-	is_server = false
-	change_state(GameState.MENU)
-	get_tree().change_scene_to_file(MAIN_MENU_SCENE)
+	# 连接网络管理器信号
+	network_manager.connection_succeeded.connect(_on_connection_succeeded)
+	network_manager.connection_failed.connect(_on_connection_failed)
+	network_manager.server_disconnected.connect(_on_server_disconnected)
 
 # 修改游戏状态
 func change_state(new_state: int):
 	var old_state = current_state
 	current_state = new_state
 	
+	# 发出信号通知状态改变
+	game_state_changed.emit(old_state, new_state)
+	
 	match new_state:
-		GameState.MENU:
+		GameState.MAIN_MENU:
 			pass
 		GameState.LOBBY:
-			if old_state == GameState.MENU:
+			if old_state == GameState.MAIN_MENU:
 				get_tree().change_scene_to_file(LOBBY_SCENE)
 		GameState.GAME:
 			# 初始化游戏变量
@@ -114,7 +88,7 @@ func change_state(new_state: int):
 			survivor_escaped = 0
 			
 			# 生成随机种子用于地图生成
-			if is_server:
+			if network_manager.is_server:
 				current_seed = randi()
 				# 通知所有客户端使用相同种子
 				rpc("set_game_seed", current_seed)
@@ -129,17 +103,100 @@ func set_game_seed(seed_value: int):
 	current_seed = seed_value
 	print("收到地图种子：", current_seed)
 
+# 创建服务器
+func create_server(port: int = 10567) -> bool:
+	if network_manager.create_server(port):
+		change_state(GameState.LOBBY)
+		return true
+	return false
+
+# 加入服务器
+func join_server(address: String, port: int = 10567) -> bool:
+	return network_manager.join_server(address, port)
+
+# 断开连接
+func disconnect_from_server():
+	network_manager.disconnect_from_server()
+	change_state(GameState.MAIN_MENU)
+	get_tree().change_scene_to_file(MAIN_MENU_SCENE)
+
 # 开始游戏(仅主机可调用)
 func start_game():
-	if is_server:
-		rpc("on_game_start")
-		change_state(GameState.GAME)
+	if network_manager.is_server:
+		network_manager.start_game()
 
-# 通知所有客户端游戏开始
+# 网络连接成功
+func _on_connection_succeeded():
+	change_state(GameState.LOBBY)
+
+# 网络连接失败
+func _on_connection_failed():
+	print("连接失败，返回主菜单")
+	change_state(GameState.MAIN_MENU)
+
+# 服务器断开连接
+func _on_server_disconnected():
+	disconnect_from_server()
+
+# 发电机完成计数
+func generator_completed():
+	if !network_manager.is_server:
+		return
+		
+	generators_completed += 1
+	rpc("sync_generator_count", generators_completed)
+	
+	# 检查是否所有发电机都修好
+	if generators_completed >= GENERATORS_REQUIRED:
+		rpc("on_all_generators_completed")
+
+# 同步发电机计数
 @rpc("authority", "call_remote", "reliable")
-func on_game_start():
-	print("游戏开始!")
-	change_state(GameState.GAME)
+func sync_generator_count(count: int):
+	generators_completed = count
+	print("发电机进度：", generators_completed, "/", GENERATORS_REQUIRED)
+
+# 所有发电机修好后调用
+@rpc("authority", "call_remote", "reliable")
+func on_all_generators_completed():
+	print("所有发电机已修好，出口门已通电!")
+	# 这里可以添加出口门通电的逻辑
+
+# 检查游戏结束条件
+func check_game_end():
+	if !network_manager.is_server:
+		return
+		
+	# 如果所有幸存者逃脱或死亡，游戏结束
+	if survivor_escaped + (MAX_SURVIVORS - survivors_alive) >= MAX_SURVIVORS:
+		var killer_won = survivor_escaped == 0
+		rpc("end_game", killer_won)
+
+# 结束游戏
+@rpc("authority", "call_remote", "reliable")
+func end_game(killer_won: bool):
+	print("游戏结束，杀手获胜: ", killer_won)
+	change_state(GameState.END_SCREEN)
+
+# 更新幸存者状态
+func update_survivor_count(alive: int, escaped: int):
+	if !network_manager.is_server:
+		return
+		
+	survivors_alive = alive
+	survivor_escaped = escaped
+	
+	# 同步到所有客户端
+	rpc("sync_survivor_status", survivors_alive, survivor_escaped)
+	
+	# 检查游戏结束条件
+	check_game_end()
+
+# 同步幸存者状态
+@rpc("authority", "call_remote", "reliable")
+func sync_survivor_status(alive: int, escaped: int):
+	survivors_alive = alive
+	survivor_escaped = escaped
 
 # 更新玩家准备状态
 func set_player_ready(is_ready: bool):
@@ -175,74 +232,14 @@ func sync_player_list(players: Dictionary):
 	player_info = players.duplicate()
 	print("玩家列表已更新，当前玩家:", player_info.size())
 
-# 发电机完成计数
-func generator_completed():
-	if !is_server:
-		return
-		
-	generators_completed += 1
-	rpc("sync_generator_count", generators_completed)
-	
-	# 检查是否所有发电机都修好
-	if generators_completed >= GENERATORS_REQUIRED:
-		rpc("on_all_generators_completed")
+# 加载游戏设置
+func load_settings():
+	# 加载平衡设置
+	if game_balance_manager:
+		game_balance_manager.load_balance_settings()
 
-# 同步发电机计数
-@rpc("authority", "call_remote", "reliable")
-func sync_generator_count(count: int):
-	generators_completed = count
-	print("发电机进度：", generators_completed, "/", GENERATORS_REQUIRED)
-
-# 所有发电机修好后调用
-@rpc("authority", "call_remote", "reliable")
-func on_all_generators_completed():
-	print("所有发电机已修好，出口门已通电!")
-	# 这里可以添加出口门通电的逻辑
-
-# 检查游戏结束条件
-func check_game_end():
-	if !is_server:
-		return
-		
-	# 如果所有幸存者逃脱或死亡，游戏结束
-	if survivor_escaped + (MAX_SURVIVORS - survivors_alive) >= MAX_SURVIVORS:
-		var killer_won = survivor_escaped == 0
-		rpc("end_game", killer_won)
-
-# 结束游戏
-@rpc("authority", "call_remote", "reliable")
-func end_game(killer_won: bool):
-	print("游戏结束，杀手获胜: ", killer_won)
-	change_state(GameState.END_SCREEN)
-
-# 网络事件处理函数
-func _on_peer_connected(id: int):
-	print("玩家连接：", id)
-
-func _on_peer_disconnected(id: int):
-	print("玩家断开连接：", id)
-	
-	# 移除断开连接的玩家
-	if player_info.has(id):
-		player_info.erase(id)
-		
-		if is_server:
-			rpc("sync_player_list", player_info)
-
-func _on_connected_to_server():
-	print("已连接到服务器")
-	var my_id = multiplayer.get_unique_id()
-	player_info[my_id] = my_info.duplicate()
-	
-	# 将自己的信息发送给服务器
-	rpc_id(1, "update_player_info", my_id, my_info)
-	change_state(GameState.LOBBY)
-
-func _on_connection_failed():
-	print("连接服务器失败")
-	multiplayer.multiplayer_peer = null
-	is_server = false
-
-func _on_server_disconnected():
-	print("服务器已断开连接")
-	disconnect_from_server() 
+# 保存游戏设置
+func save_settings():
+	# 保存平衡设置
+	if game_balance_manager:
+		game_balance_manager.save_balance_settings() 

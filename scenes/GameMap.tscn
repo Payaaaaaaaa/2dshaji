@@ -1,0 +1,44 @@
+[gd_scene load_steps=4 format=3 uid="uid://dckj24h5xc87t"]
+
+[ext_resource type="Script" path="res://scripts/GameMap.gd" id="1_iql0n"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_xnusy"]
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_ry0ij"]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_xnusy")
+
+[node name="GameMap" type="Node2D"]
+script = ExtResource("1_iql0n")
+
+[node name="TileMap" type="TileMap" parent="."]
+tile_set = SubResource("TileSet_ry0ij")
+format = 2
+layer_0/name = "Ground"
+
+[node name="Objects" type="Node2D" parent="."]
+
+[node name="Players" type="Node2D" parent="."]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.5, 0.5)
+
+[node name="SpawnPoints" type="Node2D" parent="."]
+
+[node name="KillerSpawn" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(128, 128)
+
+[node name="SurvivorSpawn1" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(384, 384)
+
+[node name="SurvivorSpawn2" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(640, 128)
+
+[node name="SurvivorSpawn3" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(384, 640)
+
+[node name="SurvivorSpawn4" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(640, 640) 

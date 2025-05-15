@@ -1,372 +1,352 @@
-[gd_scene load_steps=4 format=3 uid="uid://dty1xq5o5gckm"]
+[gd_scene load_steps=9 format=3 uid="uid://bp7ypfwkl84f2"]
 
-[ext_resource type="Script" path="res://scripts/GameHUD.gd" id="1_m5xal"]
-[ext_resource type="PackedScene" uid="uid://ci7dcvnpnw34f" path="res://scenes/ui/QTE.tscn" id="2_02lms"]
-[ext_resource type="PackedScene" uid="uid://cnwcm5x5c14hv" path="res://scenes/ui/InteractionPrompt.tscn" id="3_n7qci"]
+[ext_resource type="Script" path="res://scripts/UI/GameHUD.gd" id="1_fhtct"]
+[ext_resource type="PackedScene" uid="uid://d2tjlf2ry1g0g" path="res://scenes/UI/InteractionPromptUI.tscn" id="2_0plf4"]
+[ext_resource type="PackedScene" uid="uid://cpfhflbdkdnxy" path="res://scenes/UI/SkillCheckUI.tscn" id="3_lnwb1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lf4pj"]
+bg_color = Color(0.05, 0.05, 0.05, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.2, 0.2, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ik1j4"]
+bg_color = Color(0.8, 0, 0, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.2, 0.2, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1e0y2"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0.1, 0.1, 0.1, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="Animation" id="Animation_ykghu"]
+resource_name = "show_notification"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("NotificationPanel:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(0.5, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_8j47g"]
+_data = {
+"show_notification": SubResource("Animation_ykghu")
+}
 
 [node name="GameHUD" type="CanvasLayer"]
-script = ExtResource("1_m5xal")
+script = ExtResource("1_fhtct")
 
-[node name="SurvivorHUD" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="HealthBar" type="ProgressBar" parent="SurvivorHUD"]
-layout_mode = 1
+[node name="HealthPanel" type="Panel" parent="."]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = -40.0
+offset_top = -100.0
 offset_right = 220.0
 offset_bottom = -20.0
 grow_vertical = 0
-max_value = 2.0
-value = 2.0
-show_percentage = false
+theme_override_styles/panel = SubResource("StyleBoxFlat_lf4pj")
 
-[node name="HealthLabel" type="Label" parent="SurvivorHUD/HealthBar"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.5
-offset_right = 20.0
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-text = "健康"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ObjectivesList" type="VBoxContainer" parent="SurvivorHUD"]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -220.0
-offset_top = 80.0
-offset_right = -20.0
-offset_bottom = 180.0
-grow_horizontal = 0
-
-[node name="ObjectivesLabel" type="Label" parent="SurvivorHUD/ObjectivesList"]
-layout_mode = 2
-text = "目标:"
-
-[node name="RepairGenerators" type="Label" parent="SurvivorHUD/ObjectivesList"]
-layout_mode = 2
-text = "□ 修理发电机 (0/5)"
-
-[node name="OpenExitGate" type="Label" parent="SurvivorHUD/ObjectivesList"]
-layout_mode = 2
-text = "□ 打开出口门"
-
-[node name="Escape" type="Label" parent="SurvivorHUD/ObjectivesList"]
-layout_mode = 2
-text = "□ 逃离"
-
-[node name="StatusEffects" type="HBoxContainer" parent="SurvivorHUD"]
+[node name="HealthLabel" type="Label" parent="HealthPanel"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -100.0
-offset_top = 80.0
-offset_right = 100.0
-offset_bottom = 120.0
+offset_left = -90.0
+offset_top = 10.0
+offset_right = 90.0
+offset_bottom = 35.0
 grow_horizontal = 2
-alignment = 1
+text = "健康"
+horizontal_alignment = 1
 
-[node name="Effect1" type="Panel" parent="SurvivorHUD/StatusEffects"]
-custom_minimum_size = Vector2(40, 40)
-layout_mode = 2
-
-[node name="Icon" type="TextureRect" parent="SurvivorHUD/StatusEffects/Effect1"]
+[node name="HealthBar" type="ProgressBar" parent="HealthPanel"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Effect2" type="Panel" parent="SurvivorHUD/StatusEffects"]
-custom_minimum_size = Vector2(40, 40)
-layout_mode = 2
-
-[node name="Icon" type="TextureRect" parent="SurvivorHUD/StatusEffects/Effect2"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Effect3" type="Panel" parent="SurvivorHUD/StatusEffects"]
-custom_minimum_size = Vector2(40, 40)
-layout_mode = 2
-
-[node name="Icon" type="TextureRect" parent="SurvivorHUD/StatusEffects/Effect3"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Effect4" type="Panel" parent="SurvivorHUD/StatusEffects"]
-custom_minimum_size = Vector2(40, 40)
-layout_mode = 2
-
-[node name="Icon" type="TextureRect" parent="SurvivorHUD/StatusEffects/Effect4"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="KillerHUD" type="Control" parent="."]
-visible = false
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="PowerBar" type="ProgressBar" parent="KillerHUD"]
-layout_mode = 1
-anchors_preset = 2
+anchors_preset = 7
+anchor_left = 0.5
 anchor_top = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = -40.0
-offset_right = 220.0
-offset_bottom = -20.0
+offset_left = -90.0
+offset_top = -35.0
+offset_right = 90.0
+offset_bottom = -10.0
+grow_horizontal = 2
 grow_vertical = 0
-max_value = 1.0
-value = 0.5
+theme_override_styles/fill = SubResource("StyleBoxFlat_ik1j4")
+value = 80.0
 show_percentage = false
 
-[node name="PowerLabel" type="Label" parent="KillerHUD/PowerBar"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.5
-offset_right = 20.0
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-text = "能力"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="SurvivorStatus" type="VBoxContainer" parent="KillerHUD"]
-layout_mode = 1
+[node name="StatusPanel" type="Panel" parent="."]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -220.0
-offset_top = 80.0
+offset_top = 20.0
 offset_right = -20.0
-offset_bottom = 240.0
+offset_bottom = 100.0
 grow_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_lf4pj")
 
-[node name="SurvivorStatusLabel" type="Label" parent="KillerHUD/SurvivorStatus"]
-layout_mode = 2
-text = "幸存者状态:"
-
-[node name="Survivor1" type="HBoxContainer" parent="KillerHUD/SurvivorStatus"]
-layout_mode = 2
-
-[node name="Name" type="Label" parent="KillerHUD/SurvivorStatus/Survivor1"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "幸存者1"
-
-[node name="Status" type="Label" parent="KillerHUD/SurvivorStatus/Survivor1"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "健康"
-horizontal_alignment = 2
-
-[node name="Survivor2" type="HBoxContainer" parent="KillerHUD/SurvivorStatus"]
-layout_mode = 2
-
-[node name="Name" type="Label" parent="KillerHUD/SurvivorStatus/Survivor2"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "幸存者2"
-
-[node name="Status" type="Label" parent="KillerHUD/SurvivorStatus/Survivor2"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "受伤"
-horizontal_alignment = 2
-
-[node name="Survivor3" type="HBoxContainer" parent="KillerHUD/SurvivorStatus"]
-layout_mode = 2
-
-[node name="Name" type="Label" parent="KillerHUD/SurvivorStatus/Survivor3"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "幸存者3"
-
-[node name="Status" type="Label" parent="KillerHUD/SurvivorStatus/Survivor3"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "垂死"
-horizontal_alignment = 2
-
-[node name="Survivor4" type="HBoxContainer" parent="KillerHUD/SurvivorStatus"]
-layout_mode = 2
-
-[node name="Name" type="Label" parent="KillerHUD/SurvivorStatus/Survivor4"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "幸存者4"
-
-[node name="Status" type="Label" parent="KillerHUD/SurvivorStatus/Survivor4"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "被挂"
-horizontal_alignment = 2
-
-[node name="StatusEffects" type="HBoxContainer" parent="KillerHUD"]
+[node name="StatusIcon" type="TextureRect" parent="StatusPanel"]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -100.0
-offset_top = 80.0
-offset_right = 100.0
-offset_bottom = 120.0
-grow_horizontal = 2
-alignment = 1
-
-[node name="Effect1" type="Panel" parent="KillerHUD/StatusEffects"]
-custom_minimum_size = Vector2(40, 40)
-layout_mode = 2
-
-[node name="Icon" type="TextureRect" parent="KillerHUD/StatusEffects/Effect1"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 10.0
+offset_top = -30.0
+offset_right = 60.0
+offset_bottom = 30.0
 grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
 
-[node name="Effect2" type="Panel" parent="KillerHUD/StatusEffects"]
-custom_minimum_size = Vector2(40, 40)
-layout_mode = 2
-
-[node name="Icon" type="TextureRect" parent="KillerHUD/StatusEffects/Effect2"]
+[node name="StatusLabel" type="Label" parent="StatusPanel"]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
 anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -13.0
+offset_right = -10.0
+offset_bottom = 13.0
+grow_horizontal = 0
 grow_vertical = 2
+text = "正常"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Effect3" type="Panel" parent="KillerHUD/StatusEffects"]
-custom_minimum_size = Vector2(40, 40)
-layout_mode = 2
-
-[node name="Icon" type="TextureRect" parent="KillerHUD/StatusEffects/Effect3"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="GameInfoPanel" type="Panel" parent="."]
+[node name="GameInfoPanel" type="HBoxContainer" parent="."]
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -200.0
-offset_top = 10.0
+offset_top = 20.0
 offset_right = 200.0
 offset_bottom = 70.0
 grow_horizontal = 2
+theme_override_constants/separation = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GameInfoPanel"]
+[node name="GeneratorsPanel" type="Panel" parent="GameInfoPanel"]
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lf4pj")
+
+[node name="IconLabel" type="Label" parent="GameInfoPanel/GeneratorsPanel"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 10.0
+offset_top = -13.0
+offset_right = 50.0
+offset_bottom = 13.0
 grow_vertical = 2
-
-[node name="GameStateLabel" type="Label" parent="GameInfoPanel/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "游戏进行中"
-horizontal_alignment = 1
-
-[node name="InfoContainer" type="HBoxContainer" parent="GameInfoPanel/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-alignment = 1
-
-[node name="GeneratorsLabel" type="Label" parent="GameInfoPanel/VBoxContainer/InfoContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "发电机: 0/5"
-horizontal_alignment = 1
+text = "发电机"
 vertical_alignment = 1
 
-[node name="TimerLabel" type="Label" parent="GameInfoPanel/VBoxContainer/InfoContainer"]
+[node name="CountLabel" type="Label" parent="GameInfoPanel/GeneratorsPanel"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -13.0
+offset_right = -10.0
+offset_bottom = 13.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "0/5"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SurvivorsPanel" type="Panel" parent="GameInfoPanel"]
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lf4pj")
+
+[node name="IconLabel" type="Label" parent="GameInfoPanel/SurvivorsPanel"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 10.0
+offset_top = -13.0
+offset_right = 50.0
+offset_bottom = 13.0
+grow_vertical = 2
+text = "幸存者"
+vertical_alignment = 1
+
+[node name="CountLabel" type="Label" parent="GameInfoPanel/SurvivorsPanel"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -13.0
+offset_right = -10.0
+offset_bottom = 13.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "4/4"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="TimeLabel" type="Label" parent="GameInfoPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "00:00"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SurvivorsLabel" type="Label" parent="GameInfoPanel/VBoxContainer/InfoContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "幸存者: 4"
+[node name="InventoryPanel" type="Panel" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -100.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_lf4pj")
+
+[node name="ItemIcon" type="TextureRect" parent="InventoryPanel"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 10.0
+offset_top = -30.0
+offset_right = 60.0
+offset_bottom = 30.0
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ItemLabel" type="Label" parent="InventoryPanel"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -25.0
+offset_right = -10.0
+offset_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "急救包"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="InteractionPrompt" parent="." instance=ExtResource("3_n7qci")]
-visible = false
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -200.0
-offset_top = -100.0
-offset_right = 200.0
-offset_bottom = -20.0
-grow_horizontal = 2
-grow_vertical = 0
+[node name="UsesLabel" type="Label" parent="InventoryPanel"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = 1.0
+offset_right = -10.0
+offset_bottom = 27.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 12
+text = "剩余: 3"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="QTE" parent="." instance=ExtResource("2_02lms")]
+[node name="NotificationPanel" type="Panel" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 100.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1e0y2")
+
+[node name="Label" type="Label" parent="NotificationPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "通知消息"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InteractionPrompt" parent="." instance=ExtResource("2_0plf4")]
 visible = false
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -150.0
-offset_top = -100.0
-offset_right = 150.0
+offset_top = 100.0
 offset_bottom = 100.0
-grow_horizontal = 2
-grow_vertical = 2
-auto_start = false 
+
+[node name="SkillCheckUI" parent="." instance=ExtResource("3_lnwb1")]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = 100.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_8j47g")
+} 

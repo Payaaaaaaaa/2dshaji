@@ -1,5 +1,5 @@
 extends Control
-class_name InteractionPrompt
+class_name InteractionPromptMenu
 
 # 互动对象类型
 enum ObjectType {

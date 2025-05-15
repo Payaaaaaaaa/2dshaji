@@ -1,5 +1,5 @@
 extends CanvasLayer
-class_name GameHUD
+class_name MainGameHUD
 
 # UI组件引用
 @onready var survivor_hud = $SurvivorHUD
